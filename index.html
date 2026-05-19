@@ -412,6 +412,53 @@
     }
     .btn-test:hover { background: var(--color-bg-tertiary); }
 
+    /* ── Import Wizard ── */
+    .import-step { display: none; }
+    .import-step.active { display: block; animation: fadeIn 0.2s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .step-indicator {
+      display: flex; justify-content: center; gap: 12px; margin-bottom: 1.5rem;
+    }
+    .step-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--color-border); cursor: pointer; transition: all 0.2s ease;
+    }
+    .step-dot:hover { background: var(--color-text-tertiary); }
+    .step-dot.active { background: var(--color-text-primary); width: 24px; border-radius: 5px; }
+
+    .import-textarea {
+      width: 100%; min-height: 180px; padding: 12px;
+      background: var(--color-bg-secondary);
+      border: 0.5px solid var(--color-border);
+      border-radius: var(--radius-md); font-size: 14px;
+      color: var(--color-text-primary); font-family: var(--font-sans);
+      line-height: 1.6; resize: vertical;
+    }
+    .import-textarea:focus { outline: none; border-color: var(--color-text-primary); }
+
+    .import-preview-item {
+      display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px;
+      background: var(--color-bg-secondary); border: 0.5px solid var(--color-border);
+      border-radius: var(--radius-md); margin-bottom: 8px;
+    }
+    .import-preview-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: white; font-weight: 500; flex-shrink: 0;
+    }
+    .import-preview-info { flex: 1; min-width: 0; }
+    .import-preview-name {
+      font-size: 14px; font-weight: 500; margin-bottom: 2px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .import-preview-address {
+      font-size: 12px; color: var(--color-text-secondary); margin-bottom: 2px;
+    }
+    .import-preview-activity {
+      font-size: 12px; color: var(--color-text-tertiary);
+    }
+
     @media (max-width: 400px) {
       .activity-grid { grid-template-columns: repeat(2, 1fr); }
       .code-display { font-size: 28px; letter-spacing: 0.15em; }
@@ -439,12 +486,16 @@
     <div class="card">
       <div class="section-label">你的昵称</div>
       <input type="text" id="home-name" placeholder="输入昵称（最多8字）" maxlength="8" />
+      <p style="font-size:12px;color:var(--color-text-tertiary);margin-top:4px">留空则使用随机昵称</p>
 
       <div class="btn-row">
         <button class="btn-primary" onclick="createRoom()">
           <i class="ti ti-plus" aria-hidden="true"></i> 创建新房间
         </button>
         <button onclick="toggleJoin()">加入房间</button>
+        <button onclick="toggleImportWizard()">
+          <i class="ti ti-upload" aria-hidden="true"></i> 快速导入
+        </button>
       </div>
     </div>
 
@@ -457,6 +508,110 @@
         <div class="btn-row">
           <button class="btn-primary" onclick="joinRoom()">
             <i class="ti ti-door-enter" aria-hidden="true"></i> 加入
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Screen: Import Wizard ═══ -->
+  <div id="screen-import-wizard" class="screen">
+    <div class="page-header">
+      <div>
+        <div class="logo-text">快速导入地址</div>
+        <div class="logo-sub">为您的朋友快速创建房间</div>
+      </div>
+      <button class="settings-btn" onclick="closeImportWizard()" title="关闭">
+        <i class="ti ti-x" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="step-indicator">
+      <div class="step-dot active" id="step-dot-1" onclick="showImportStep(1)"></div>
+      <div class="step-dot" id="step-dot-2" onclick="showImportStep(2)"></div>
+      <div class="step-dot" id="step-dot-3" onclick="showImportStep(3)"></div>
+    </div>
+
+    <div id="import-step-1" class="import-step active">
+      <div class="card">
+        <div class="section-label">你的昵称</div>
+        <input type="text" id="import-name" placeholder="输入昵称（最多8字）"
+          maxlength="8" class="settings-input" />
+        <p style="font-size:12px;color:var(--color-text-tertiary);margin-top:4px">留空则使用随机昵称</p>
+
+        <div class="section-label" style="margin-top: 1rem">选择活动</div>
+        <div class="activity-grid">
+          <button class="activity-btn" onclick="selectImportActivity(this,'吃饭')">
+            <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>吃饭
+          </button>
+          <button class="activity-btn" onclick="selectImportActivity(this,'遛弯')">
+            <i class="ti ti-walk" aria-hidden="true"></i>遛弯
+          </button>
+          <button class="activity-btn" onclick="selectImportActivity(this,'喝咖啡')">
+            <i class="ti ti-coffee" aria-hidden="true"></i>喝咖啡
+          </button>
+          <button class="activity-btn" onclick="selectImportActivity(this,'购物')">
+            <i class="ti ti-shopping-bag" aria-hidden="true"></i>购物
+          </button>
+          <button class="activity-btn" onclick="selectImportActivity(this,'看电影')">
+            <i class="ti ti-movie" aria-hidden="true"></i>看电影
+          </button>
+          <button class="activity-btn" onclick="selectImportActivity(this,'custom')"
+            id="import-custom-btn">
+            <i class="ti ti-pencil" aria-hidden="true"></i>自定义
+          </button>
+        </div>
+        <input type="text" id="import-custom-activity" placeholder="描述你想做的活动…"
+          maxlength="20" style="display:none;margin-top:4px;width:100%;padding:10px 12px;
+          background:var(--color-bg-secondary);border:0.5px solid var(--color-border);
+          border-radius:var(--radius-md);font-size:14px;color:var(--color-text-primary)" />
+
+        <div class="btn-row" style="margin-top: 1.5rem">
+          <button onclick="closeImportWizard()">取消</button>
+          <button class="btn-primary" onclick="nextImportStep()" id="import-step1-next">下一步</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="import-step-2" class="import-step">
+      <div class="card">
+        <div class="section-label">输入地址列表</div>
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:0.5rem">
+          每行一个地址，可选：地址 [Tab] 自定义昵称
+        </p>
+        <textarea id="import-addresses" class="import-textarea"
+          placeholder="北京市朝阳区三里屯&#10;上海市浦东新区陆家嘴&#10;深圳市福田区科技园&#10;&#10;或带昵称格式：&#10;北京市朝阳区三里屯&#9;小张"></textarea>
+
+        <div style="margin-top:0.75rem;font-size:13px;color:var(--color-text-secondary)">
+          已输入: <span id="import-addr-count">0</span> 个地址
+        </div>
+
+        <div class="btn-row" style="margin-top: 1.5rem">
+          <button onclick="prevImportStep()">上一步</button>
+          <button class="btn-primary" onclick="nextImportStep()" id="import-step2-next">下一步</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="import-step-3" class="import-step">
+      <div class="card">
+        <p style="font-size:14px;font-weight:500;margin-bottom:1rem">确认以下信息</p>
+
+        <div class="section-label">房间验证码</div>
+        <div class="share-row" style="margin-bottom:1rem">
+          <span class="share-code" id="import-room-code">——</span>
+          <button onclick="copyImportCode()">
+            <i class="ti ti-copy" aria-hidden="true"></i> 复制
+          </button>
+        </div>
+
+        <div class="section-label">成员列表</div>
+        <div id="import-preview-list"></div>
+
+        <div class="btn-row" style="margin-top: 1.5rem">
+          <button onclick="prevImportStep()">上一步</button>
+          <button class="btn-primary" onclick="createRoomFromImport()" id="import-create-btn">
+            <i class="ti ti-check" aria-hidden="true"></i> 创建房间
           </button>
         </div>
       </div>
@@ -819,7 +974,8 @@
 
   let state = {
     myName: '', myCode: '', selectedActivity: '',
-    confirmed: false, members: []
+    confirmed: false, members: [],
+    importMode: false, importStep: 1, importAddresses: [], importActivity: ''
   };
 
   function showScreen(id) {
@@ -834,8 +990,11 @@
   }
 
   function createRoom() {
-    const name = document.getElementById('home-name').value.trim();
-    if (!name) { document.getElementById('home-name').focus(); return; }
+    let name = document.getElementById('home-name').value.trim();
+    if (!name) {
+      name = generateRandomName();
+      document.getElementById('home-name').value = name;
+    }
     state = { myName: name, myCode: genCode(), selectedActivity: '', confirmed: false, members: [] };
     initRoom();
   }
@@ -846,10 +1005,13 @@
   }
 
   function joinRoom() {
-    const name = document.getElementById('home-name').value.trim();
+    let name = document.getElementById('home-name').value.trim();
     const code = document.getElementById('join-code').value.trim().toUpperCase();
     const err = document.getElementById('join-error');
-    if (!name) { err.textContent = '请先填写昵称'; return; }
+    if (!name) {
+      name = generateRandomName();
+      document.getElementById('home-name').value = name;
+    }
     if (code.length !== 6) { err.textContent = '验证码为6位字符'; return; }
     err.textContent = '';
     state = {
@@ -910,6 +1072,14 @@
       state.selectedActivity = val;
     }
     checkConfirmBtn();
+  }
+
+  function generateRandomName() {
+    const prefixes = ['小', '大', '老'];
+    const names = ['A', 'B', 'C', 'D', 'E', 'F', '张', '李', '王', '赵', '刘', '周', '黄', '吴', '徐', '孙'];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const name = names[Math.floor(Math.random() * names.length)];
+    return prefix + name;
   }
 
   function checkConfirmBtn() {
@@ -1236,6 +1406,237 @@ ${memberDesc}
     const modal = document.getElementById('settings-modal');
     if (e.target === modal) {
       toggleSettings();
+    }
+  });
+
+  // ═══ Import Wizard Functions ═══
+
+  function toggleImportWizard() {
+    showScreen('screen-import-wizard');
+    resetImportWizard();
+  }
+
+  function closeImportWizard() {
+    showScreen('screen-home');
+    resetImportWizard();
+  }
+
+  function resetImportWizard() {
+    state.importStep = 1;
+    state.importAddresses = [];
+    state.importActivity = '';
+    document.getElementById('import-name').value = generateRandomName();
+    document.getElementById('import-addresses').value = '';
+    document.getElementById('import-custom-activity').style.display = 'none';
+    document.querySelectorAll('#screen-import-wizard .activity-btn').forEach(b =>
+      b.classList.remove('active'));
+    showImportStep(1);
+    updateImportAddressCount();
+  }
+
+  function showImportStep(step) {
+    state.importStep = step;
+    document.querySelectorAll('.import-step').forEach(s => s.classList.remove('active'));
+    document.getElementById(`import-step-${step}`).classList.add('active');
+    document.querySelectorAll('.step-dot').forEach((d, i) => {
+      d.classList.toggle('active', i + 1 === step);
+    });
+
+    if (step === 3) {
+      renderImportPreview();
+    }
+  }
+
+  function selectImportActivity(btn, activity) {
+    document.querySelectorAll('#screen-import-wizard .activity-btn').forEach(b =>
+      b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (activity === 'custom') {
+      document.getElementById('import-custom-activity').style.display = 'block';
+      state.importActivity = '';
+    } else {
+      document.getElementById('import-custom-activity').style.display = 'none';
+      state.importActivity = activity;
+    }
+  }
+
+  function parseAddressLines(text) {
+    return text
+      .split('\n')
+      .map(line => {
+        const parts = line.split('\t').map(s => s.trim());
+        return {
+          address: parts[0],
+          customName: parts[1] || ''
+        };
+      })
+      .filter(item => item.address.length > 0 && item.address.length <= 100);
+  }
+
+  function validateImportAddresses() {
+    const textarea = document.getElementById('import-addresses').value;
+    const addresses = parseAddressLines(textarea);
+
+    if (addresses.length < 2) {
+      alert('至少需要 2 个地址（包括当前用户）');
+      return null;
+    }
+    if (addresses.length > 20) {
+      alert('最多支持 20 个地址');
+      return null;
+    }
+
+    return addresses;
+  }
+
+  function updateImportAddressCount() {
+    const textarea = document.getElementById('import-addresses').value;
+    const addresses = parseAddressLines(textarea);
+    document.getElementById('import-addr-count').textContent = addresses.length;
+  }
+
+  function nextImportStep() {
+    if (state.importStep === 1) {
+      const name = document.getElementById('import-name').value.trim();
+      if (!name) {
+        alert('请输入昵称');
+        return;
+      }
+      const customActivity = document.getElementById('import-custom-activity').value.trim();
+      const activity = state.importActivity || customActivity;
+      if (!activity) {
+        alert('请选择或输入活动类型');
+        return;
+      }
+      state.myName = name;
+      state.importActivity = activity;
+      showImportStep(2);
+    } else if (state.importStep === 2) {
+      const addresses = validateImportAddresses();
+      if (!addresses) return;
+      state.importAddresses = addresses;
+      showImportStep(3);
+    }
+  }
+
+  function prevImportStep() {
+    if (state.importStep > 1) {
+      showImportStep(state.importStep - 1);
+    }
+  }
+
+  function generateQuickName(index) {
+    const names = ['小A', '小B', '小C', '小D', '小E', '小F',
+                   '小张', '小李', '小王', '小赵', '小刘', '小周'];
+    return names[index % names.length];
+  }
+
+  function renderImportPreview() {
+    const code = genCode();
+    state.myCode = code;
+    document.getElementById('import-room-code').textContent = code;
+
+    const list = document.getElementById('import-preview-list');
+    list.innerHTML = '';
+
+    const AVATAR_COLORS = ['#4A90E2', '#50C878', '#F5A623', '#BD10E0', '#FF6B6B', '#FFA500'];
+
+    // 当前用户（第一条地址）
+    const firstAddr = state.importAddresses[0];
+    const currentMember = {
+      name: state.myName,
+      address: firstAddr.address,
+      activity: state.importActivity,
+      colorIdx: 0
+    };
+    renderImportMemberPreview(currentMember, 0, AVATAR_COLORS, true);
+
+    // 其他成员
+    state.importAddresses.slice(1).forEach((item, idx) => {
+      const name = item.customName || generateQuickName(idx);
+      const member = {
+        name: name,
+        address: item.address,
+        activity: state.importActivity,
+        colorIdx: (idx + 1) % 6
+      };
+      renderImportMemberPreview(member, idx + 1, AVATAR_COLORS, false);
+    });
+  }
+
+  function renderImportMemberPreview(member, index, colors, isCurrent) {
+    const list = document.getElementById('import-preview-list');
+    const item = document.createElement('div');
+    item.className = 'import-preview-item';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'import-preview-avatar';
+    avatar.style.background = colors[member.colorIdx];
+    avatar.textContent = member.name.charAt(0);
+
+    const info = document.createElement('div');
+    info.className = 'import-preview-info';
+    info.innerHTML = `
+      <div class="import-preview-name">
+        ${escHtml(member.name)}
+        ${isCurrent ? '<span style="font-size:11px;color:var(--color-text-tertiary)">(你)</span>' : ''}
+      </div>
+      <div class="import-preview-address">${escHtml(member.address)}</div>
+      <div class="import-preview-activity">${escHtml(member.activity)}</div>
+    `;
+
+    item.appendChild(avatar);
+    item.appendChild(info);
+    list.appendChild(item);
+  }
+
+  function copyImportCode() {
+    const code = document.getElementById('import-room-code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      alert('验证码已复制');
+    }).catch(() => {
+      alert('复制失败，请重试');
+    });
+  }
+
+  function createRoomFromImport() {
+    state.confirmed = true;
+    state.importMode = true;
+    state.members = [];
+
+    const AVATAR_COLORS = ['#4A90E2', '#50C878', '#F5A623', '#BD10E0', '#FF6B6B', '#FFA500'];
+
+    // 添加当前用户（第一条地址）
+    const firstAddr = state.importAddresses[0];
+    state.members.push({
+      name: state.myName,
+      address: firstAddr.address,
+      activity: state.importActivity,
+      confirmed: true,
+      colorIdx: 0
+    });
+
+    // 添加其他成员
+    state.importAddresses.slice(1).forEach((item, idx) => {
+      const name = item.customName || generateQuickName(idx);
+      state.members.push({
+        name: name,
+        address: item.address,
+        activity: state.importActivity,
+        confirmed: true,
+        colorIdx: (idx + 1) % 6
+      });
+    });
+
+    // 初始化房间UI
+    initRoom();
+  }
+
+  // 监听地址输入实时更新计数
+  document.addEventListener('input', (e) => {
+    if (e.target.id === 'import-addresses') {
+      updateImportAddressCount();
     }
   });
 </script>
